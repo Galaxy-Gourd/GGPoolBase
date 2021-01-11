@@ -27,10 +27,7 @@ namespace GGSharpPool
         
         public int recyclesCount { get; private set; }
 
-        public int activeSpilloverCount => 
-            _capacityMax > 0 
-            ? Math.Max(0, _pool.Count - _capacityMax) 
-            : 0;
+        public int activeSpilloverCount => _capacityMax > 0 ? Math.Max(0, _pool.Count - _capacityMax) : 0;
 
         public int pooledUseCount => recyclesCount + _availableUsedCount;
         
