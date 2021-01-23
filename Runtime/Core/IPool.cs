@@ -11,20 +11,20 @@ namespace GGSharpPool
         /// The minimum number of pooled instances for this pool. If the number of items is lower than this
         /// value when it is set, the required number of items will be created to meet the minimum.
         /// </summary>
-        int capacityMin { get; set; }
+        int CapacityMin { get; set; }
         
         /// <summary>
         /// The maximum number of items this pool can contain. When this threshold is reached, the pool will
         /// begin recycling instances rather than creating them anew, unless @spilloverAllowance > 0.
         /// </summary>
-        int capacityMax { get; set; }
+        int CapacityMax { get; set; }
         
         /// <summary>
         /// Defines the behavior for the pool when the maximum instance count has been met and a new instance
         /// is requested. Only relevant when pool has a maximum instance count defined. Spillover instances are
         /// destroyed when they are relinquished, rather than being returned to the pool.
         /// </summary>
-        int spilloverAllowance { get; set; }
+        int SpilloverAllowance { get; set; }
         
         #endregion Active Properties
 
@@ -34,32 +34,32 @@ namespace GGSharpPool
         /// <summary>
         /// The total number of instances this pool currently contains.
         /// </summary>
-        int instanceCount { get; }
+        int InstanceCount { get; }
     
         /// <summary>
         /// The total number of ACTIVE instances this pool currently contains.
         /// </summary>
-        int activeCount { get; }
+        int ActiveCount { get; }
         
         /// <summary>
         /// The number of times instances in the pool have been recycled for reuse.
         /// </summary>
-        int recyclesCount { get; }
+        int RecyclesCount { get; }
 
         /// <summary>
         /// Returns the number of instances in the pool that are spillover.
         /// </summary>
-        int activeSpilloverCount { get; }
+        int ActiveSpilloverCount { get; }
         
         /// <summary>
         /// The number of times instances have been used from the pool - either available, or recycled
         /// </summary>
-        int pooledUseCount { get; }
+        int PooledUseCount { get; }
         
         /// <summary>
         /// The label for this pool; used for debugging.
         /// </summary>
-        string poolLabel { get; set; }
+        string PoolLabel { get; set; }
 
         #endregion Passive Properties
 

@@ -10,7 +10,7 @@ namespace GGSharpPool
         /// <summary>
         /// True if this instance is NOT being used (according to its pool)
         /// </summary>
-        bool availableInPool { get; set; }
+        bool AvailableInPool { get; set; }
 
         #endregion Properties
 

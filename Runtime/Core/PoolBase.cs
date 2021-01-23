@@ -7,31 +7,31 @@ namespace GGSharpPool
     {
         #region Properties
 
-        public int capacityMin
+        public int CapacityMin
         {
             get => _capacityMin;
             set => SetCapacityMin(value);
         }
 
-        public int capacityMax
+        public int CapacityMax
         {
             get => _capacityMax;
             set => SetCapacityMax(value);
         }
 
-        public int spilloverAllowance { get; set; }
+        public int SpilloverAllowance { get; set; }
 
-        public int instanceCount => _pool.Count;
+        public int InstanceCount => _pool.Count;
         
-        public int activeCount => GetPoolActiveCount();
+        public int ActiveCount => GetPoolActiveCount();
         
-        public int recyclesCount { get; private set; }
+        public int RecyclesCount { get; private set; }
 
-        public int activeSpilloverCount => _capacityMax > 0 ? Math.Max(0, _pool.Count - _capacityMax) : 0;
+        public int ActiveSpilloverCount => _capacityMax > 0 ? Math.Max(0, _pool.Count - _capacityMax) : 0;
 
-        public int pooledUseCount => recyclesCount + _availableUsedCount;
+        public int PooledUseCount => RecyclesCount + _availableUsedCount;
         
-        public string poolLabel { get; set; }
+        public string PoolLabel { get; set; }
 
         #endregion Properties
 
@@ -64,10 +64,10 @@ namespace GGSharpPool
         {
             if (configData != null)
             {
-                capacityMin = configData.minimumCapacity;
-                capacityMax = configData.maximumCapacity;
-                spilloverAllowance = configData.spilloverAllowance;
-                poolLabel = configData.label;
+                CapacityMin = configData.minimumCapacity;
+                CapacityMax = configData.maximumCapacity;
+                SpilloverAllowance = configData.spilloverAllowance;
+                PoolLabel = configData.label;
             }
         }
 
@@ -88,8 +88,8 @@ namespace GGSharpPool
                     // We are either full or at max capacity. Create or recycle/spillover
                     if (_capacityMax > 0 && _pool.Count >= _capacityMax)
                     {
-                        if (spilloverAllowance == -1 || 
-                            (spilloverAllowance > 0 && _pool.Count < _capacityMax + spilloverAllowance))
+                        if (SpilloverAllowance == -1 || 
+                            (SpilloverAllowance > 0 && _pool.Count < _capacityMax + SpilloverAllowance))
                         {
                             result = Spillover();
                         }
@@ -123,11 +123,11 @@ namespace GGSharpPool
         /// <returns></returns>
         private IClientPoolable GetNextAvailable()
         {
-            return _pool[0].availableInPool ? _pool[0] : null;
+            return _pool[0].AvailableInPool ? _pool[0] : null;
         }
 
         /// <summary>
-        /// 
+        /// Instantiates a brand-new instance of the poolable.
         /// </summary>
         /// <returns></returns>
         private IClientPoolable CreateNew(bool activateAfterCreation)
@@ -148,6 +148,10 @@ namespace GGSharpPool
             return result;
         }
         
+        /// <summary>
+        /// Creates and returns a new instance of the IClientPoolable and adds it to the pool.
+        /// </summary>
+        /// <returns></returns>
         protected abstract IClientPoolable CreateNewPoolable();
         
         #endregion Get Next
@@ -167,7 +171,7 @@ namespace GGSharpPool
             _pool.Add(p);
             p.Recycle();
             
-            recyclesCount++;
+            RecyclesCount++;
             return p;
         }
         
@@ -194,7 +198,7 @@ namespace GGSharpPool
             }
 
             _pool.Add(instance);
-            instance.availableInPool = false;
+            instance.AvailableInPool = false;
             instance.Claim();
         }
 
@@ -211,7 +215,7 @@ namespace GGSharpPool
             {
                 _pool.Remove(instance);
                 _pool.Insert(0, instance);
-                instance.availableInPool = true;
+                instance.AvailableInPool = true;
                 instance.Relinquish();
             }
         }
@@ -307,7 +311,7 @@ namespace GGSharpPool
             int cleanCount = 0;
             for (int i = 0; i < _pool.Count; i++)
             {
-                if (_pool[i].availableInPool)
+                if (_pool[i].AvailableInPool)
                 {
                     cleanCount++;
                 }
@@ -346,7 +350,7 @@ namespace GGSharpPool
             int a = 0;
             for (int i = _pool.Count - 1; i >= 0; i--)
             {
-                if (!_pool[i].availableInPool)
+                if (!_pool[i].AvailableInPool)
                 {
                     a++;
                 }                
