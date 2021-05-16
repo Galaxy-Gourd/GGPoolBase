@@ -1,7 +1,9 @@
 {
     "name": "GG.SharpPool",
     "rootNamespace": "GGSharpPool",
-    "references": [],
+    "references": [
+        "GUID:afbc0cabfa5564f968a043e2e15a562d"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
@@ -10,5 +12,5 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
-    "noEngineReferences": true
+    "noEngineReferences": false
 }

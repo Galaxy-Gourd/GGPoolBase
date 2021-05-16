@@ -1,43 +1,39 @@
 using System;
 using System.Collections.Generic;
+using GGSharpData;
+using UnityEngine;
 
 namespace GGSharpPool
 {
-    public abstract class PoolBase : IPool
+    public abstract class Pool : IPool
     {
-        #region Properties
+        #region VARIABLES
 
+        // Properties
         public int CapacityMin
         {
             get => _capacityMin;
             set => SetCapacityMin(value);
         }
-
         public int CapacityMax
         {
             get => _capacityMax;
             set => SetCapacityMax(value);
         }
-
         public int SpilloverAllowance { get; set; }
-
-        public int InstanceCount => _pool.Count;
-        
-        public int ActiveCount => GetPoolActiveCount();
-        
-        public int RecyclesCount { get; private set; }
-
-        public int ActiveSpilloverCount => _capacityMax > 0 ? Math.Max(0, _pool.Count - _capacityMax) : 0;
-
-        public int PooledUseCount => RecyclesCount + _availableUsedCount;
-        
         public string PoolLabel { get; set; }
+        public ITelemetry<DataTelemetryPool> Telemetry { get; }
 
-        #endregion Properties
-
-
-        #region Fields
-
+        // Telemetry
+        internal int InstanceCount => _pool.Count;
+        internal int ActiveCount => GetPoolActiveCount();
+        internal int RecyclesCount;
+        internal int ActiveSpilloverCount => _capacityMax > 0 ? Math.Max(0, _pool.Count - _capacityMax) : 0;
+        internal int PooledUseCount => RecyclesCount + _availableUsedCount;
+        
+        
+        // Private
+            
         /// <summary>
         /// The pool of instances, ordered from oldest (0) to newest (count - 1)
         /// </summary>
@@ -52,30 +48,33 @@ namespace GGSharpPool
         /// </summary>
         private int _availableUsedCount;
 
-        #endregion Fields
+        #endregion VARIABLES
 
 
-        #region Constructor
+        #region CONSTRUCTOR
 
         /// <summary>
         /// Creates a pool with optional preconfigured data.
         /// </summary>
-        protected PoolBase(PoolConfigData configData = null)
+        protected Pool(DataConfigPool configData = null)
         {
             if (configData != null)
             {
-                CapacityMin = configData.minimumCapacity;
-                CapacityMax = configData.maximumCapacity;
-                SpilloverAllowance = configData.spilloverAllowance;
-                PoolLabel = configData.label;
+                CapacityMin = configData.MinimumCapacity;
+                CapacityMax = configData.MaximumCapacity;
+                SpilloverAllowance = configData.SpilloverAllowance;
+                PoolLabel = configData.Label;
             }
+            
+            // Create telemetry module
+            Telemetry = new TelemetryPool();
         }
 
-        #endregion Constructor
+        #endregion CONSTRUCTOR
 
 
-        #region Get Next
-        
+        #region RETRIEVAL
+
         public IClientPoolable GetNext()
         {
             // Get oldest pool object
@@ -114,6 +113,7 @@ namespace GGSharpPool
                 result = CreateNew(true);
             }
 
+            UpdateTelemetry();
             return result;
         }
 
@@ -154,10 +154,10 @@ namespace GGSharpPool
         /// <returns></returns>
         protected abstract IClientPoolable CreateNewPoolable();
         
-        #endregion Get Next
+        #endregion RETRIEVAL
 
 
-        #region Overflow
+        #region OVERFLOW
 
         /// <summary>
         /// Recycles and claims the oldest instance of the pooled objects.
@@ -178,17 +178,16 @@ namespace GGSharpPool
         /// <summary>
         /// Creates a new instance, but marks it for deletion.
         /// </summary>
-        /// <returns></returns>
         private IClientPoolable Spillover()
         {
             IClientPoolable p = CreateNew(true);
             return p;
         }
 
-        #endregion Overflow
+        #endregion OVERFLOW
 
 
-        #region Ownership
+        #region OWNERSHIP
 
         public void ClaimInstance(IClientPoolable instance, bool isNewInstance)
         {
@@ -200,6 +199,8 @@ namespace GGSharpPool
             _pool.Add(instance);
             instance.AvailableInPool = false;
             instance.Claim();
+            
+            UpdateTelemetry();
         }
 
         public void RelinquishInstance(IClientPoolable instance)
@@ -218,22 +219,21 @@ namespace GGSharpPool
                 instance.AvailableInPool = true;
                 instance.Relinquish();
             }
+            
+            UpdateTelemetry();
         }
         
         void IPool.DeleteFromInstance(IClientPoolable instance)
         {
             _pool.Remove(instance);
+            UpdateTelemetry();
         }
 
-        #endregion Ownership
+        #endregion OWNERSHIP
 
 
-        #region Capactiy
+        #region CAPACITY
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="minValue"></param>
         private void SetCapacityMin(int minValue)
         {
             if (minValue == _capacityMin)
@@ -245,12 +245,9 @@ namespace GGSharpPool
             
             // We need to create objects if we don't have enough
             EnforceMinimumCapacity();
+            UpdateTelemetry();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="maxValue"></param>
         private void SetCapacityMax(int maxValue)
         {
             if (maxValue == _capacityMax)
@@ -260,7 +257,8 @@ namespace GGSharpPool
             if (!PoolValidationUtility.ValidatePoolCapacity(_capacityMin, _capacityMax))
                 return;
             
-            EnforceMaximumCapacity();
+            EnforceMaximumCapacity(_pool, _capacityMax);
+            UpdateTelemetry();
         }
 
         /// <summary>
@@ -278,32 +276,39 @@ namespace GGSharpPool
         /// <summary>
         /// Ensures that instances are destroyed if the instance count exceeds the pool max capacity
         /// </summary>
-        private void EnforceMaximumCapacity()
+        private static void EnforceMaximumCapacity(
+            List<IClientPoolable> pool,
+            int maxCapacity)
         {
-            if (_capacityMax < 0)
+            if (maxCapacity < 0)
                 return;
             
-            int removalCount = _pool.Count - _capacityMax;
+            int removalCount = pool.Count - maxCapacity;
             if (removalCount > 0)
             {
-                // Remove oldest objects first
-                for (int i = 0; i < _pool.Count; i++)
+                // Remove oldest objects first; gather in separate list to prevent list iteration issues
+                List<IClientPoolable> toRemove = new List<IClientPoolable>();
+                for (int i = 0; i < pool.Count; i++)
                 {
                     if (removalCount <= 0)
                         break;
                 
-                    IClientPoolable p = _pool[i];
-                    p.DeleteFromPool();
-                    _pool.Remove(p);
+                    toRemove.Add(pool[i]);
                     removalCount--;
+                }
+                
+                foreach (IClientPoolable client in toRemove)
+                {
+                    client.DeleteFromPool();
+                    pool.Remove(client);
                 }
             }
         }
 
-        #endregion Capacity
+        #endregion CAPACITY
 
 
-        #region Utility
+        #region UTILITY
 
         void IPool.Clean()
         {
@@ -329,6 +334,8 @@ namespace GGSharpPool
                 _pool.RemoveAt(0);
                 cleaned++;
             }
+            
+            UpdateTelemetry();
         }
         
         void IPool.Clear()
@@ -339,12 +346,10 @@ namespace GGSharpPool
                 p.DeleteFromPool();
                 _pool.Remove(p);
             }
+            
+            UpdateTelemetry();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         private int GetPoolActiveCount()
         {
             int a = 0;
@@ -363,6 +368,12 @@ namespace GGSharpPool
             return a;
         }
 
-        #endregion Utility
+        private void UpdateTelemetry()
+        {
+            // Update telemetry
+            (Telemetry as TelemetryPool).Broadcast(this);
+        }
+
+        #endregion UTILITY
     }
 }

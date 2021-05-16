@@ -1,3 +1,5 @@
+using GGSharpData;
+
 namespace GGSharpPool
 {
     /// <summary>
@@ -5,7 +7,7 @@ namespace GGSharpPool
     /// </summary>
     public interface IPool
     {
-        #region Active Properties
+        #region PROPERTIES
 
         /// <summary>
         /// The minimum number of pooled instances for this pool. If the number of items is lower than this
@@ -26,45 +28,15 @@ namespace GGSharpPool
         /// </summary>
         int SpilloverAllowance { get; set; }
         
-        #endregion Active Properties
-
-
-        #region Passive Properties
-
         /// <summary>
-        /// The total number of instances this pool currently contains.
+        /// Telemetry data for this pool
         /// </summary>
-        int InstanceCount { get; }
-    
-        /// <summary>
-        /// The total number of ACTIVE instances this pool currently contains.
-        /// </summary>
-        int ActiveCount { get; }
-        
-        /// <summary>
-        /// The number of times instances in the pool have been recycled for reuse.
-        /// </summary>
-        int RecyclesCount { get; }
+        ITelemetry<DataTelemetryPool> Telemetry { get; }
 
-        /// <summary>
-        /// Returns the number of instances in the pool that are spillover.
-        /// </summary>
-        int ActiveSpilloverCount { get; }
-        
-        /// <summary>
-        /// The number of times instances have been used from the pool - either available, or recycled
-        /// </summary>
-        int PooledUseCount { get; }
-        
-        /// <summary>
-        /// The label for this pool; used for debugging.
-        /// </summary>
-        string PoolLabel { get; set; }
-
-        #endregion Passive Properties
+        #endregion PROPERTIES
 
 
-        #region Methods
+        #region METHODS
 
         /// <summary>
         /// Claims and returns the next available instance from the pool.
@@ -97,6 +69,6 @@ namespace GGSharpPool
         /// </summary>
         void Clear();
 
-        #endregion
+        #endregion METHODS
     }
 }

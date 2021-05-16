@@ -5,23 +5,23 @@ namespace GGSharpPool
     /// </summary>
     public interface IClientPoolable
     {
-        #region Properties
+        #region PROPERTIES
 
         /// <summary>
         /// True if this instance is NOT being used (according to its pool)
         /// </summary>
         bool AvailableInPool { get; set; }
 
-        #endregion Properties
+        #endregion PROPERTIES
 
 
-        #region Methods
+        #region METHODS
 
         /// <summary>
         /// When the instance is created by the given pool.
         /// </summary>
         /// <param name="pool">The pool from which the instance was created</param>
-        void OnInstanceCreated(PoolBase pool);
+        void OnInstanceCreated(Pool pool);
 
         /// <summary>
         /// Claims the instance and activates for use.
@@ -43,6 +43,6 @@ namespace GGSharpPool
         /// </summary>
         void DeleteFromPool();
 
-        #endregion Methods
+        #endregion METHODS
     }
 }
