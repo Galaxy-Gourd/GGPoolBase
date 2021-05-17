@@ -1,6 +1,6 @@
-using GGSharpData;
+using GG.Data.Base;
 
-namespace GGSharpPool
+namespace GG.Pool.Base
 {
     /// <summary>
     /// Defines the public requirements for a pool object.

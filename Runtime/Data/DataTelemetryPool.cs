@@ -1,6 +1,6 @@
-using GGSharpData;
+using GG.Data.Base;
 
-namespace GGSharpPool
+namespace GG.Pool.Base
 {
     public class DataTelemetryPool : DataTelemetry
     {

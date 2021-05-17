@@ -1,4 +1,4 @@
-namespace GGSharpPool
+namespace GG.Pool.Base
 {
     /// <summary>
     /// Defines pooling behaviors for client objects.

@@ -1,6 +1,6 @@
 {
-    "name": "GG.SharpPool",
-    "rootNamespace": "GGSharpPool",
+    "name": "GG.Pool.Base",
+    "rootNamespace": "GG.Pool.Base",
     "references": [
         "GUID:afbc0cabfa5564f968a043e2e15a562d"
     ],
