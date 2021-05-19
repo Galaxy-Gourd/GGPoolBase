@@ -1,6 +1,6 @@
 using GG.Data.Base;
 
-namespace GG.Pool.Base
+namespace GGPoolBase
 {
     /// <summary>
     /// Defines the public requirements for a pool object.

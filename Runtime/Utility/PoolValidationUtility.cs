@@ -1,6 +1,6 @@
 using System;
 
-namespace GG.Pool.Base
+namespace GGPoolBase
 {
     /// <summary>
     /// Validates various pool data/parameters.

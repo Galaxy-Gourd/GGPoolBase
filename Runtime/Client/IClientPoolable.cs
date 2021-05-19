@@ -1,4 +1,4 @@
-namespace GG.Pool.Base
+namespace GGPoolBase
 {
     /// <summary>
     /// Defines pooling behaviors for client objects.

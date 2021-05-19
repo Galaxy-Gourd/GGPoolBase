@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using GG.Data.Base;
 using UnityEngine;
 
-namespace GG.Pool.Base
+namespace GGPoolBase
 {
     public abstract class Pool : IPool
     {

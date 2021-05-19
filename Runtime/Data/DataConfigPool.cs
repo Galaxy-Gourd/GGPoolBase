@@ -1,6 +1,6 @@
 using GG.Data.Base;
 
-namespace GG.Pool.Base
+namespace GGPoolBase
 {
     public class DataConfigPool : DataConfig
     {
