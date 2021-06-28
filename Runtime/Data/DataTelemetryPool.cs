@@ -1,4 +1,4 @@
-using GG.Data.Base;
+using GGDataBase;
 
 namespace GGPoolBase
 {

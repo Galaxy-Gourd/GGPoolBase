@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using GG.Data.Base;
+using GGDataBase;
 using UnityEngine;
 
 namespace GGPoolBase
